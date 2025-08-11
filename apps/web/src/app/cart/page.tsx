@@ -1,66 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { CakeIcon, ShoppingCartIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline'
-
-interface CartItem {
-  id: string
-  title: string
-  handle: string
-  price: number
-  image: string
-  quantity: number
-  prep_time_hours: number
-}
+import { useCart } from '@/contexts/CartContext'
 
 export default function CartPage() {
-  // Mock cart data - in real app this would come from context/state management
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const { cart, updateQuantity, removeItem } = useCart()
+  const cartItems = cart.items
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setCartItems(items => items.filter(item => item.id !== id))
-    } else {
-      setCartItems(items => 
-        items.map(item => 
-          item.id === id ? { ...item, quantity: newQuantity } : item
-        )
-      )
-    }
-  }
-
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id))
-  }
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const subtotal = cart.subtotal
   const deliveryFee = subtotal > 2500 ? 0 : 295 // Free delivery over €25
   const total = subtotal + deliveryFee
-
-  // Demo function to add sample items
-  const addSampleItems = () => {
-    setCartItems([
-      {
-        id: '1',
-        title: 'Chocoladetaart',
-        handle: 'chocoladetaart',
-        price: 2850,
-        image: '🍫',
-        quantity: 1,
-        prep_time_hours: 4
-      },
-      {
-        id: '3',
-        title: 'Brownies (6 stuks)',
-        handle: 'brownies',
-        price: 1250,
-        image: '🧁',
-        quantity: 2,
-        prep_time_hours: 2
-      }
-    ])
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,7 +37,7 @@ export default function CartPage() {
               <Link href="/cart" className="text-primary-600 font-medium relative">
                 <ShoppingCartIcon className="w-6 h-6" />
                 <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                  {cart.totalItems}
                 </span>
               </Link>
             </div>
@@ -101,7 +51,7 @@ export default function CartPage() {
             Winkelwagen
           </h1>
           <span className="text-gray-500">
-            ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)
+            ({cart.totalItems} items)
           </span>
         </div>
 
@@ -114,21 +64,12 @@ export default function CartPage() {
             <p className="text-gray-600 mb-8">
               Voeg wat heerlijke producten toe om te beginnen!
             </p>
-            <div className="space-y-4">
-              <Link
-                href="/producten"
-                className="btn-primary inline-block"
-              >
-                Bekijk producten
-              </Link>
-              <br />
-              <button
-                onClick={addSampleItems}
-                className="text-primary-600 hover:text-primary-700 underline text-sm"
-              >
-                Demo: Voeg voorbeeldproducten toe
-              </button>
-            </div>
+            <Link
+              href="/producten"
+              className="btn-primary inline-block"
+            >
+              Bekijk producten
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

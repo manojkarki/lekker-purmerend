@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { CakeIcon, MapPinIcon, CreditCardIcon, BanknotesIcon } from '@heroicons/react/24/outline'
 import { PaymentMethodSelector } from '@/components/PaymentMethodSelector'
+import { useCart } from '@/contexts/CartContext'
 
 interface CheckoutData {
   deliveryMethod: 'delivery' | 'pickup'
@@ -24,6 +25,7 @@ interface CheckoutData {
 }
 
 export default function CheckoutPage() {
+  const { cart } = useCart()
   const [checkoutData, setCheckoutData] = useState<CheckoutData>({
     deliveryMethod: 'delivery',
     customer: {
@@ -44,17 +46,8 @@ export default function CheckoutPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Mock cart items
-  const cartItems = [
-    {
-      id: '1',
-      title: 'Chocoladetaart',
-      price: 2850,
-      quantity: 1
-    }
-  ]
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const cartItems = cart.items
+  const subtotal = cart.subtotal
   const deliveryFee = checkoutData.deliveryMethod === 'delivery' && subtotal < 2500 ? 295 : 0
   const total = subtotal + deliveryFee
 

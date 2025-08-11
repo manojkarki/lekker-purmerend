@@ -7,6 +7,7 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
 import { ProductGallery } from '@/components/ProductGallery'
 import { useState } from 'react'
+import { useCart } from '@/contexts/CartContext'
 
 interface Product {
   id: string
@@ -32,6 +33,7 @@ interface Product {
 export default function ProductDetailPage({ params }: { params: { handle: string } }) {
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
+  const { addItem, cart } = useCart()
   
   // Mock product data (same as in products page)
   const products: Product[] = [
@@ -104,9 +106,25 @@ export default function ProductDetailPage({ params }: { params: { handle: string
   }
 
   const handleAddToCart = () => {
-    // Mock cart functionality
-    console.log(`Adding ${quantity}x ${product.title} to cart`)
+    if (!product) return
+    
+    // Add items one by one based on quantity
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: product.id,
+        title: product.title,
+        handle: product.handle,
+        price: product.price,
+        image: product.image,
+        prep_time_hours: product.prep_time_hours
+      })
+    }
+    
+    // Show success message
     alert(`${quantity}x ${product.title} toegevoegd aan winkelwagen!`)
+    
+    // Reset quantity
+    setQuantity(1)
   }
 
   return (
@@ -134,7 +152,7 @@ export default function ProductDetailPage({ params }: { params: { handle: string
               <Link href="/cart" className="text-gray-700 hover:text-primary-600 relative">
                 <ShoppingCartIcon className="w-6 h-6" />
                 <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
+                  {cart.totalItems}
                 </span>
               </Link>
             </div>

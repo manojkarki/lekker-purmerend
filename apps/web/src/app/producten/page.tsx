@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { CakeIcon } from '@heroicons/react/24/outline'
+import { CakeIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
+import { useCart } from '@/contexts/CartContext'
 
 export default function ProductenPage() {
+  const { cart } = useCart()
+  
   // Mock product data
   const products = [
     {
@@ -63,6 +66,12 @@ export default function ProductenPage() {
               </Link>
               <Link href="/contact" className="text-gray-700 hover:text-primary-600">
                 Contact
+              </Link>
+              <Link href="/cart" className="text-gray-700 hover:text-primary-600 relative">
+                <ShoppingCartIcon className="w-6 h-6" />
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cart.totalItems}
+                </span>
               </Link>
             </div>
           </div>

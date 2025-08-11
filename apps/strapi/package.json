@@ -1,0 +1,39 @@
+{
+  "name": "@lekker/strapi",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A Strapi application for Lekker Purmerend blog",
+  "scripts": {
+    "build": "strapi build",
+    "develop": "strapi develop",
+    "dev": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@strapi/strapi": "4.15.5",
+    "@strapi/plugin-users-permissions": "4.15.5",
+    "@strapi/plugin-upload": "4.15.5",
+    "@strapi/plugin-documentation": "4.15.5",
+    "@strapi/plugin-i18n": "4.15.5",
+    "@strapi/provider-upload-local": "4.15.5",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^5.2.0",
+    "styled-components": "^5.2.1",
+    "pg": "8.8.0",
+    "pg-connection-string": "^2.6.1"
+  },
+  "author": {
+    "name": "Lekker Purmerend Team"
+  },
+  "strapi": {
+    "uuid": "lekker-purmerend-cms"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=20.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}

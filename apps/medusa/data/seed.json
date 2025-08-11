@@ -1,0 +1,270 @@
+{
+  "store": {
+    "currencies": ["eur"],
+    "default_currency": "eur",
+    "default_sales_channel": {
+      "name": "Default Sales Channel",
+      "description": "Default sales channel"
+    },
+    "default_region": {
+      "name": "Nederland",
+      "currency_code": "eur",
+      "tax_rate": 21,
+      "payment_providers": ["manual"],
+      "fulfillment_providers": ["manual"],
+      "countries": ["nl"]
+    }
+  },
+  "products": [
+    {
+      "title": "Chocoladetaart",
+      "subtitle": null,
+      "description": "Rijke chocoladetaart met ganache en verse room",
+      "handle": "chocoladetaart",
+      "is_giftcard": false,
+      "weight": 1000,
+      "status": "published",
+      "images": [],
+      "options": [
+        {
+          "title": "Maat"
+        }
+      ],
+      "variants": [
+        {
+          "title": "Klein (6 personen)",
+          "prices": [
+            {
+              "currency": "eur",
+              "amount": 2850
+            }
+          ],
+          "options": [
+            {
+              "value": "Klein (6 personen)"
+            }
+          ],
+          "inventory_quantity": 50,
+          "manage_inventory": true
+        },
+        {
+          "title": "Groot (12 personen)",
+          "prices": [
+            {
+              "currency": "eur", 
+              "amount": 4850
+            }
+          ],
+          "options": [
+            {
+              "value": "Groot (12 personen)"
+            }
+          ],
+          "inventory_quantity": 50,
+          "manage_inventory": true
+        }
+      ],
+      "metadata": {
+        "prep_time_hours": "4",
+        "same_day_cutoff": "12:00",
+        "estimation_rules": "same_day_if_before_cutoff|next_day",
+        "category": "taarten"
+      }
+    },
+    {
+      "title": "Appeltaart",
+      "subtitle": null,
+      "description": "Klassieke Nederlandse appeltaart met kaneelkruim",
+      "handle": "appeltaart",
+      "is_giftcard": false,
+      "weight": 900,
+      "status": "published",
+      "images": [],
+      "options": [
+        {
+          "title": "Maat"
+        }
+      ],
+      "variants": [
+        {
+          "title": "Regulier",
+          "prices": [
+            {
+              "currency": "eur",
+              "amount": 1850
+            }
+          ],
+          "options": [
+            {
+              "value": "Regulier"
+            }
+          ],
+          "inventory_quantity": 50,
+          "manage_inventory": true
+        }
+      ],
+      "metadata": {
+        "prep_time_hours": "3",
+        "same_day_cutoff": "14:00",
+        "estimation_rules": "same_day_if_before_cutoff|next_day",
+        "category": "taarten"
+      }
+    },
+    {
+      "title": "Brownies (6 stuks)",
+      "subtitle": null,
+      "description": "Zachte chocolade brownies met walnoten",
+      "handle": "brownies",
+      "is_giftcard": false,
+      "weight": 400,
+      "status": "published",
+      "images": [],
+      "options": [
+        {
+          "title": "Verpakking"
+        }
+      ],
+      "variants": [
+        {
+          "title": "6 stuks",
+          "prices": [
+            {
+              "currency": "eur",
+              "amount": 1250
+            }
+          ],
+          "options": [
+            {
+              "value": "6 stuks"
+            }
+          ],
+          "inventory_quantity": 100,
+          "manage_inventory": true
+        }
+      ],
+      "metadata": {
+        "prep_time_hours": "2",
+        "same_day_cutoff": "15:00",
+        "estimation_rules": "same_day_if_before_cutoff|next_day",
+        "category": "snacks"
+      }
+    },
+    {
+      "title": "Stroopwafels (10 stuks)",
+      "subtitle": null,
+      "description": "Verse stroopwafels met karamelstroop",
+      "handle": "stroopwafels",
+      "is_giftcard": false,
+      "weight": 300,
+      "status": "published",
+      "images": [],
+      "options": [
+        {
+          "title": "Verpakking"
+        }
+      ],
+      "variants": [
+        {
+          "title": "10 stuks",
+          "prices": [
+            {
+              "currency": "eur",
+              "amount": 950
+            }
+          ],
+          "options": [
+            {
+              "value": "10 stuks"
+            }
+          ],
+          "inventory_quantity": 100,
+          "manage_inventory": true
+        }
+      ],
+      "metadata": {
+        "prep_time_hours": "3",
+        "same_day_cutoff": "13:00",
+        "estimation_rules": "same_day_if_before_cutoff|next_day",
+        "category": "snacks"
+      }
+    },
+    {
+      "title": "Carrot Cake",
+      "subtitle": null,
+      "description": "Carrot cake met cream cheese frosting",
+      "handle": "carrot-cake",
+      "is_giftcard": false,
+      "weight": 800,
+      "status": "published",
+      "images": [],
+      "options": [
+        {
+          "title": "Maat"
+        }
+      ],
+      "variants": [
+        {
+          "title": "Regulier",
+          "prices": [
+            {
+              "currency": "eur",
+              "amount": 2250
+            }
+          ],
+          "options": [
+            {
+              "value": "Regulier"
+            }
+          ],
+          "inventory_quantity": 50,
+          "manage_inventory": true
+        }
+      ],
+      "metadata": {
+        "prep_time_hours": "5",
+        "same_day_cutoff": "11:00",
+        "estimation_rules": "same_day_if_before_cutoff|next_day",
+        "category": "taarten"
+      }
+    },
+    {
+      "title": "Koekjes Mix (20 stuks)",
+      "subtitle": null,
+      "description": "Assortiment van verschillende koekjes",
+      "handle": "koekjes-mix",
+      "is_giftcard": false,
+      "weight": 500,
+      "status": "published",
+      "images": [],
+      "options": [
+        {
+          "title": "Verpakking"
+        }
+      ],
+      "variants": [
+        {
+          "title": "20 stuks",
+          "prices": [
+            {
+              "currency": "eur",
+              "amount": 1450
+            }
+          ],
+          "options": [
+            {
+              "value": "20 stuks"
+            }
+          ],
+          "inventory_quantity": 100,
+          "manage_inventory": true
+        }
+      ],
+      "metadata": {
+        "prep_time_hours": "2",
+        "same_day_cutoff": "16:00",
+        "estimation_rules": "same_day_if_before_cutoff|next_day",
+        "category": "koekjes"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "lekker-purmerend",
+  "private": true,
+  "description": "Homemade food e-commerce platform for Purmerend",
+  "scripts": {
+    "dev": "docker-compose -f infra/docker/docker-compose.yml up -d && pnpm --parallel dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:medusa": "pnpm --filter medusa dev",
+    "dev:strapi": "pnpm --filter strapi dev",
+    "build": "pnpm --recursive build",
+    "build:web": "pnpm --filter web build",
+    "build:medusa": "pnpm --filter medusa build",
+    "build:strapi": "pnpm --filter strapi build",
+    "setup": "bash scripts/setup.sh",
+    "seed": "node scripts/seed.js",
+    "docker:up": "docker-compose -f infra/docker/docker-compose.yml up -d",
+    "docker:down": "docker-compose -f infra/docker/docker-compose.yml down",
+    "docker:logs": "docker-compose -f infra/docker/docker-compose.yml logs -f",
+    "clean": "pnpm --recursive clean && docker-compose -f infra/docker/docker-compose.yml down -v"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

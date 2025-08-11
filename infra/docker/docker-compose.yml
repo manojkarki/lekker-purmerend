@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lekker-postgres
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: medusa
+      POSTGRES_DB: medusa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - lekker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: lekker-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lekker-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Medusa backend will run on host for development
+  # This is just for production deployment
+  medusa:
+    build:
+      context: ../../apps/medusa
+      dockerfile: Dockerfile
+    container_name: lekker-medusa
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://medusa:medusa@postgres:5432/medusa
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
+      COOKIE_SECRET: ${COOKIE_SECRET:-your-cookie-secret-here}
+      NODE_ENV: development
+      MEDUSA_ADMIN_ONBOARDING_TYPE: default
+    ports:
+      - "9000:9000"
+    volumes:
+      - ../../apps/medusa:/app
+      - medusa_uploads:/app/uploads
+    networks:
+      - lekker-network
+    profiles:
+      - production
+
+  # Strapi CMS will run on host for development
+  strapi:
+    build:
+      context: ../../apps/strapi
+      dockerfile: Dockerfile
+    container_name: lekker-strapi
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: strapi
+      DATABASE_USERNAME: medusa
+      DATABASE_PASSWORD: medusa
+      APP_KEYS: ${STRAPI_APP_KEYS:-key1,key2,key3,key4}
+      JWT_SECRET: ${STRAPI_JWT_SECRET:-your-strapi-jwt-secret}
+      ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-your-admin-jwt-secret}
+      API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT:-your-api-token-salt}
+      NODE_ENV: development
+    ports:
+      - "1337:1337"
+    volumes:
+      - ../../apps/strapi:/app
+      - strapi_uploads:/app/public/uploads
+    networks:
+      - lekker-network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  medusa_uploads:
+    driver: local
+  strapi_uploads:
+    driver: local
+
+networks:
+  lekker-network:
+    driver: bridge

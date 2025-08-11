@@ -1,24 +1,27 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { AnimatePresence, motion } from 'framer-motion'
 
 interface ProductGalleryProps {
   images: string[]
-  alt: string
+  title: string
   className?: string
 }
 
-export function ProductGallery({ images, alt, className = '' }: ProductGalleryProps) {
+// Check if a string is an emoji/single character (for demo purposes)
+const isEmoji = (str: string) => {
+  return str.length <= 4 && /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu.test(str)
+}
+
+export function ProductGallery({ images, title, className = '' }: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   if (!images || images.length === 0) {
     return (
-      <div className={`bg-gray-100 rounded-lg flex items-center justify-center ${className}`}>
+      <div className={`aspect-square bg-gray-100 rounded-lg flex items-center justify-center ${className}`}>
         <div className="text-center text-gray-400">
-          <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center text-4xl">
             📷
           </div>
           <p>Geen afbeelding beschikbaar</p>
@@ -35,29 +38,34 @@ export function ProductGallery({ images, alt, className = '' }: ProductGalleryPr
     setSelectedIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
+  const currentImage = images[selectedIndex]
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Main image */}
       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full h-full"
-          >
-            <Image
-              src={images[selectedIndex]}
-              alt={alt}
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        <div className="relative w-full h-full flex items-center justify-center">
+          {isEmoji(currentImage) ? (
+            <div className="text-8xl md:text-9xl">
+              {currentImage}
+            </div>
+          ) : (
+            <img
+              src={currentImage}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to emoji display if image fails to load
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                const parent = target.parentElement
+                if (parent) {
+                  parent.innerHTML = `<div class="text-8xl md:text-9xl">🍰</div>`
+                }
+              }}
             />
-          </motion.div>
-        </AnimatePresence>
+          )}
+        </div>
 
         {/* Navigation arrows - only show if multiple images */}
         {images.length > 1 && (
@@ -94,19 +102,31 @@ export function ProductGallery({ images, alt, className = '' }: ProductGalleryPr
             <button
               key={idx}
               onClick={() => setSelectedIndex(idx)}
-              className={`aspect-square relative rounded-md overflow-hidden border-2 transition-all duration-200 ${
+              className={`aspect-square relative rounded-md overflow-hidden border-2 transition-all duration-200 bg-gray-100 flex items-center justify-center ${
                 idx === selectedIndex 
                   ? 'border-primary-500 ring-2 ring-primary-200' 
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <Image 
-                src={image} 
-                alt={`${alt} ${idx + 1}`} 
-                fill 
-                className="object-cover"
-                sizes="80px"
-              />
+              {isEmoji(image) ? (
+                <div className="text-2xl">
+                  {image}
+                </div>
+              ) : (
+                <img 
+                  src={image} 
+                  alt={`${title} ${idx + 1}`} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const parent = target.parentElement
+                    if (parent) {
+                      parent.innerHTML = `<div class="text-2xl">🍰</div>`
+                    }
+                  }}
+                />
+              )}
             </button>
           ))}
         </div>

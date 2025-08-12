@@ -1,9 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { CakeIcon, CalendarIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+import { CakeIcon, CalendarIcon, ClockIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
+import { useCart } from '@/contexts/CartContext'
 
 export default function BlogPage() {
+  const { cart } = useCart()
+  const [selectedCategory, setSelectedCategory] = useState('Alle berichten')
+  
   // Mock blog data
   const posts = [
     {
@@ -38,10 +43,48 @@ export default function BlogPage() {
       category: 'Nieuws',
       featured: false,
       coverImage: '🥧'
+    },
+    {
+      id: 4,
+      title: '5 tips voor het bewaren van je taart',
+      slug: 'tips-bewaren-taart',
+      excerpt: 'Leer hoe je je huisgemaakte taart het beste kunt bewaren voor optimale versheid en smaak.',
+      publishedAt: '2025-01-03',
+      readingTime: 4,
+      category: 'Tips',
+      featured: false,
+      coverImage: '💡'
+    },
+    {
+      id: 5,
+      title: 'Glutenvrije alternatieven: zo doe je dat',
+      slug: 'glutenvrije-alternatieven-tips',
+      excerpt: 'Praktische tips voor het maken van heerlijke glutenvrije gebakjes zonder in te leveren op smaak.',
+      publishedAt: '2025-01-01',
+      readingTime: 6,
+      category: 'Tips',
+      featured: false,
+      coverImage: '🌾'
+    },
+    {
+      id: 6,
+      title: 'Ons nieuwe atelier: een kijkje achter de schermen',
+      slug: 'nieuw-atelier-achter-schermen',
+      excerpt: 'We nemen je mee voor een rondleiding door ons vernieuwde atelier waar alle magie gebeurt.',
+      publishedAt: '2024-12-28',
+      readingTime: 3,
+      category: 'Achter de schermen',
+      featured: false,
+      coverImage: '🏠'
     }
   ]
 
   const categories = ['Alle berichten', 'Recepten', 'Tips', 'Nieuws', 'Achter de schermen']
+  
+  // Filter posts based on selected category
+  const filteredPosts = selectedCategory === 'Alle berichten' 
+    ? posts 
+    : posts.filter(post => post.category === selectedCategory)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,6 +108,12 @@ export default function BlogPage() {
               <Link href="/contact" className="text-gray-700 hover:text-primary-600">
                 Contact
               </Link>
+              <Link href="/cart" className="text-gray-700 hover:text-primary-600 relative">
+                <ShoppingCartIcon className="w-6 h-6" />
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cart.totalItems}
+                </span>
+              </Link>
             </div>
           </div>
         </div>
@@ -83,11 +132,12 @@ export default function BlogPage() {
 
         {/* Categories */}
         <div className="flex flex-wrap gap-3 justify-center mb-12">
-          {categories.map((category, index) => (
+          {categories.map((category) => (
             <button
               key={category}
+              onClick={() => setSelectedCategory(category)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                index === 0
+                selectedCategory === category
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
@@ -99,7 +149,7 @@ export default function BlogPage() {
 
         {/* Blog Posts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <article key={post.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
               <div className="aspect-video bg-gray-100 flex items-center justify-center text-4xl">
                 {post.coverImage}

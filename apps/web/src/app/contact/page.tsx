@@ -7,10 +7,16 @@ import {
   MapPinIcon, 
   PhoneIcon, 
   EnvelopeIcon, 
-  ClockIcon 
+  ClockIcon,
+  Bars3Icon,
+  XMarkIcon,
+  ShoppingCartIcon
 } from '@heroicons/react/24/outline'
+import { useCart } from '@/contexts/CartContext'
 
 export default function ContactPage() {
+  const { cart } = useCart()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,48 +45,97 @@ export default function ContactPage() {
       <nav className="bg-white shadow-sm border-b">
         <div className="container">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <CakeIcon className="w-8 h-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">
+            <Link href="/" className="flex items-center gap-2 min-w-0">
+              <CakeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 flex-shrink-0" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 Lekker Purmerend
               </span>
             </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/producten" className="text-gray-700 hover:text-primary-600">
+            <div className="hidden sm:flex items-center gap-3 lg:gap-6">
+              <Link href="/producten" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Producten
               </Link>
-              <Link href="/blog" className="text-gray-700 hover:text-primary-600">
+              <Link href="/blog" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Blog
               </Link>
-              <Link href="/contact" className="text-primary-600 font-medium">
+              <Link href="/contact" className="text-primary-600 font-medium text-sm lg:text-base">
                 Contact
               </Link>
+            </div>
+            <div className="sm:hidden flex items-center gap-2">
+              <Link href="/cart" className="relative p-2">
+                <ShoppingCartIcon className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {cart.totalItems}
+                </span>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-gray-700 hover:text-primary-600"
+              >
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="w-5 h-5" />
+                ) : (
+                  <Bars3Icon className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="container py-12">
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden bg-white border-b border-gray-200 shadow-lg relative z-50">
+          <div className="container py-4">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                href="/producten" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Producten
+              </Link>
+              <Link 
+                href="/blog" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link 
+                href="/contact" 
+                className="text-primary-600 font-medium py-2 px-4 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container py-8 sm:py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-8 sm:mb-12 px-4">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4">
             Neem Contact Op
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
             Vragen over onze producten, speciale wensen of gewoon een praatje? 
             We horen graag van je!
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 px-4">
           {/* Contact Form */}
-          <div className="bg-white rounded-lg shadow-sm border p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
               Stuur ons een bericht
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label htmlFor="name" className="form-label">
                     Naam *
@@ -114,7 +169,7 @@ export default function ContactPage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label htmlFor="phone" className="form-label">
                     Telefoon
@@ -182,8 +237,8 @@ export default function ContactPage() {
           {/* Contact Info */}
           <div className="space-y-8">
             {/* Business Info */}
-            <div className="bg-white rounded-lg shadow-sm border p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
                 Bezoek onze bakkerij
               </h2>
               
@@ -219,9 +274,9 @@ export default function ContactPage() {
             </div>
 
             {/* Opening Hours */}
-            <div className="bg-white rounded-lg shadow-sm border p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <ClockIcon className="w-6 h-6 text-primary-600" />
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-8">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" />
                 Openingstijden
               </h3>
               
@@ -249,8 +304,8 @@ export default function ContactPage() {
             </div>
 
             {/* FAQ */}
-            <div className="bg-white rounded-lg shadow-sm border p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-8">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
                 Veelgestelde Vragen
               </h3>
               
@@ -286,6 +341,9 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+      
+      {/* Extra bottom spacing for mobile scroll */}
+      <div className="pb-16 sm:pb-8"></div>
     </div>
   )
 }

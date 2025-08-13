@@ -9,6 +9,12 @@
   
   body {
     @apply text-gray-900 bg-white;
+    overflow-x: hidden;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+  }
+  
+  * {
+    box-sizing: border-box;
   }
 }
 

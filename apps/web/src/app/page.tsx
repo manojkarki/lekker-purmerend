@@ -1,10 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { CakeIcon, TruckIcon, HeartIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+import { CakeIcon, TruckIcon, HeartIcon, ClockIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
 
 export default function HomePage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Mock data for demonstration
   const featuredProducts = [
@@ -47,40 +49,83 @@ export default function HomePage() {
         <div className="container">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <CakeIcon className="w-8 h-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">
+              <CakeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 Lekker Purmerend
               </span>
             </div>
-            <div className="flex items-center gap-6">
-              <Link href="/producten" className="text-gray-700 hover:text-primary-600">
+            <div className="hidden sm:flex items-center gap-4 lg:gap-6">
+              <Link href="/producten" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Producten
               </Link>
-              <Link href="/blog" className="text-gray-700 hover:text-primary-600">
+              <Link href="/blog" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Blog
               </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-primary-600">
+              <Link href="/contact" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Contact
               </Link>
+            </div>
+            <div className="sm:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-gray-700 hover:text-primary-600"
+              >
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="w-6 h-6" />
+                ) : (
+                  <Bars3Icon className="w-6 h-6" />
+                )}
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden bg-white border-b border-gray-200 shadow-lg relative z-50">
+          <div className="container py-4">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                href="/producten" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Producten
+              </Link>
+              <Link 
+                href="/blog" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link 
+                href="/contact" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-primary-50 to-white py-20">
+      <section className="bg-gradient-to-b from-primary-50 to-white py-12 sm:py-20">
         <div className="container">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 text-balance">
+          <div className="text-center max-w-3xl mx-auto px-4">
+            <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 text-balance leading-tight">
               Verse huisgemaakte
               <span className="text-primary-600"> lekkernijen</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 text-balance">
+            <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-8 text-balance leading-relaxed">
               Uit de keuken van Purmerend. Dagvers gemaakt met liefde en de beste ingrediënten. 
               Bestel online voor bezorging of kom langs voor ophalen.
             </p>
             <div className="flex justify-center">
-              <Link href="/producten" className="btn-primary text-lg px-8 py-3">
+              <Link href="/producten" className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-2 sm:py-3">
                 Bekijk ons assortiment
               </Link>
             </div>
@@ -89,9 +134,9 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="py-16 bg-white">
+      <section className="py-12 sm:py-16 bg-white">
         <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <div className="text-center">
               <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HeartIcon className="w-8 h-8 text-green-600" />
@@ -126,18 +171,18 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-12 sm:py-16 bg-gray-50">
         <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
               Onze specialiteiten
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Een selectie van onze meest populaire lekkernijen
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {featuredProducts.map((product) => (
               <div key={product.id} className="card">
                 <div className="aspect-product relative bg-gray-100">
@@ -175,8 +220,8 @@ export default function HomePage() {
             ))}
           </div>
           
-          <div className="text-center mt-12">
-            <Link href="/producten" className="btn-outline text-lg px-8 py-3">
+          <div className="text-center mt-8 sm:mt-12">
+            <Link href="/producten" className="btn-outline text-base sm:text-lg px-6 sm:px-8 py-2 sm:py-3">
               Alle producten bekijken
             </Link>
           </div>
@@ -184,7 +229,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-12 pb-16 sm:pb-12">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>

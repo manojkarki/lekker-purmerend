@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { CakeIcon, CalendarIcon, ClockIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
+import { CakeIcon, CalendarIcon, ClockIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useCart } from '@/contexts/CartContext'
 
 export default function BlogPage() {
   const { cart } = useCart()
   const [selectedCategory, setSelectedCategory] = useState('Alle berichten')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   // Mock blog data
   const posts = [
@@ -92,32 +93,81 @@ export default function BlogPage() {
       <nav className="bg-white shadow-sm border-b">
         <div className="container">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <CakeIcon className="w-8 h-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">
+            <Link href="/" className="flex items-center gap-2 min-w-0">
+              <CakeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 flex-shrink-0" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 Lekker Purmerend
               </span>
             </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/producten" className="text-gray-700 hover:text-primary-600">
+            <div className="hidden sm:flex items-center gap-3 lg:gap-6">
+              <Link href="/producten" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Producten
               </Link>
-              <Link href="/blog" className="text-primary-600 font-medium">
+              <Link href="/blog" className="text-primary-600 font-medium text-sm lg:text-base">
                 Blog
               </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-primary-600">
+              <Link href="/contact" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Contact
               </Link>
               <Link href="/cart" className="text-gray-700 hover:text-primary-600 relative">
-                <ShoppingCartIcon className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <ShoppingCartIcon className="w-5 h-5 lg:w-6 lg:h-6" />
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-4 h-4 lg:w-5 lg:h-5 flex items-center justify-center">
                   {cart.totalItems}
                 </span>
               </Link>
             </div>
+            <div className="sm:hidden flex items-center gap-2">
+              <Link href="/cart" className="relative p-2">
+                <ShoppingCartIcon className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {cart.totalItems}
+                </span>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-gray-700 hover:text-primary-600"
+              >
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="w-5 h-5" />
+                ) : (
+                  <Bars3Icon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden bg-white border-b border-gray-200 shadow-lg">
+          <div className="container py-4">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                href="/producten" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Producten
+              </Link>
+              <Link 
+                href="/blog" 
+                className="text-primary-600 font-medium py-2 px-4 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link 
+                href="/contact" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="container py-12">
         {/* Header */}
@@ -131,7 +181,7 @@ export default function BlogPage() {
         </div>
 
         {/* Categories */}
-        <div className="flex flex-wrap gap-3 justify-center mb-12">
+        <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-8 sm:mb-12 px-4">
           {categories.map((category) => (
             <button
               key={category}
@@ -212,6 +262,9 @@ export default function BlogPage() {
           </div>
         </div>
       </div>
+      
+      {/* Extra bottom spacing for mobile scroll */}
+      <div className="pb-16 sm:pb-8"></div>
     </div>
   )
 }

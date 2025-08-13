@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CakeIcon, CalendarIcon, ClockIcon, ArrowLeftIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+import { CakeIcon, CalendarIcon, ClockIcon, ArrowLeftIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useCart } from '@/contexts/CartContext'
 
 interface BlogPost {
@@ -22,6 +23,7 @@ interface BlogPost {
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { cart } = useCart()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   // Mock blog data (same as in blog listing page)
   const posts: BlogPost[] = [
@@ -380,46 +382,95 @@ Binnenkort organiseren we open dagen waar je een kijkje kunt nemen. Houd onze we
       <nav className="bg-white shadow-sm border-b">
         <div className="container">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <CakeIcon className="w-8 h-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">
+            <Link href="/" className="flex items-center gap-2 min-w-0">
+              <CakeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 flex-shrink-0" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 Lekker Purmerend
               </span>
             </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/producten" className="text-gray-700 hover:text-primary-600">
+            <div className="hidden sm:flex items-center gap-3 lg:gap-6">
+              <Link href="/producten" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Producten
               </Link>
-              <Link href="/blog" className="text-primary-600 font-medium">
+              <Link href="/blog" className="text-primary-600 font-medium text-sm lg:text-base">
                 Blog
               </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-primary-600">
+              <Link href="/contact" className="text-gray-700 hover:text-primary-600 text-sm lg:text-base">
                 Contact
               </Link>
               <Link href="/cart" className="text-gray-700 hover:text-primary-600 relative">
-                <ShoppingCartIcon className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <ShoppingCartIcon className="w-5 h-5 lg:w-6 lg:h-6" />
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-4 h-4 lg:w-5 lg:h-5 flex items-center justify-center">
                   {cart.totalItems}
                 </span>
               </Link>
+            </div>
+            <div className="sm:hidden flex items-center gap-2">
+              <Link href="/cart" className="relative p-2">
+                <ShoppingCartIcon className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {cart.totalItems}
+                </span>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-gray-700 hover:text-primary-600"
+              >
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="w-5 h-5" />
+                ) : (
+                  <Bars3Icon className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden bg-white border-b border-gray-200 shadow-lg">
+          <div className="container py-4">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                href="/producten" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Producten
+              </Link>
+              <Link 
+                href="/blog" 
+                className="text-primary-600 font-medium py-2 px-4 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link 
+                href="/contact" 
+                className="text-gray-700 hover:text-primary-600 py-2 px-4 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Breadcrumbs */}
       <div className="container py-4">
-        <nav className="text-sm">
+        <nav className="text-sm px-4">
           <Link href="/" className="text-gray-500 hover:text-primary-600">Home</Link>
           <span className="mx-2 text-gray-400">/</span>
           <Link href="/blog" className="text-gray-500 hover:text-primary-600">Blog</Link>
           <span className="mx-2 text-gray-400">/</span>
-          <span className="text-gray-900">{post.title}</span>
+          <span className="text-gray-900 truncate">{post.title}</span>
         </nav>
       </div>
 
       <div className="container pb-12">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4">
           {/* Back Button */}
           <Link 
             href="/blog"
@@ -437,7 +488,7 @@ Binnenkort organiseren we open dagen waar je een kijkje kunt nemen. Houd onze we
             </div>
 
             {/* Article Content */}
-            <div className="p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
               {/* Meta Info */}
               <div className="flex items-center gap-4 mb-6">
                 <span className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -458,7 +509,7 @@ Binnenkort organiseren we open dagen waar je een kijkje kunt nemen. Houd onze we
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
                 {post.title}
               </h1>
 
@@ -527,7 +578,7 @@ Binnenkort organiseren we open dagen waar je een kijkje kunt nemen. Houd onze we
                 Meer uit {post.category}
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {relatedPosts.map((relatedPost) => (
                   <Link 
                     key={relatedPost.id}
@@ -538,7 +589,7 @@ Binnenkort organiseren we open dagen waar je een kijkje kunt nemen. Houd onze we
                       {relatedPost.coverImage}
                     </div>
                     
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                         {relatedPost.title}
                       </h3>
@@ -565,6 +616,9 @@ Binnenkort organiseren we open dagen waar je een kijkje kunt nemen. Houd onze we
           )}
         </div>
       </div>
+      
+      {/* Extra bottom spacing for mobile scroll */}
+      <div className="pb-16 sm:pb-8"></div>
     </div>
   )
 }

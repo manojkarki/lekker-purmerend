@@ -45,13 +45,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="nl" className="h-full">
-      <body className={`${inter.className} h-full antialiased`}>
-        <div className="min-h-full">
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </div>
+    <html lang="nl">
+      <body className={`${inter.className} antialiased`}>
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   )

@@ -10,7 +10,13 @@
   body {
     @apply text-gray-900 bg-white;
     overflow-x: hidden;
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+  }
+  
+  /* Mobile-only bottom padding for safe area */
+  @media (max-width: 640px) {
+    body {
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+    }
   }
   
   * {

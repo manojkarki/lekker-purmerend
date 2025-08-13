@@ -3,13 +3,8 @@
 import Link from 'next/link'
 import { CakeIcon, TruckIcon, HeartIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
-import { PurmerendGate } from '@/components/PurmerendGate'
-import { ProductGallery } from '@/components/ProductGallery'
-import { PurmerendDetection } from '@lekker/shared-types'
-import { useState } from 'react'
 
 export default function HomePage() {
-  const [purmerendDetection, setPurmerendDetection] = useState<PurmerendDetection | null>(null)
 
   // Mock data for demonstration
   const featuredProducts = [
@@ -84,12 +79,9 @@ export default function HomePage() {
               Uit de keuken van Purmerend. Dagvers gemaakt met liefde en de beste ingrediënten. 
               Bestel online voor bezorging of kom langs voor ophalen.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Link href="/producten" className="btn-primary text-lg px-8 py-3">
                 Bekijk ons assortiment
-              </Link>
-              <Link href="#delivery-check" className="btn-outline text-lg px-8 py-3">
-                Check bezorgmogelijkheden
               </Link>
             </div>
           </div>
@@ -188,24 +180,6 @@ export default function HomePage() {
               Alle producten bekijken
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Delivery Check */}
-      <section id="delivery-check" className="py-16 bg-white">
-        <div className="container max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Check je bezorg- en betaalmogelijkheden
-            </h2>
-            <p className="text-xl text-gray-600">
-              Zie direct welke opties beschikbaar zijn voor jouw locatie
-            </p>
-          </div>
-          
-          <PurmerendGate 
-            onDetectionChange={setPurmerendDetection}
-          />
         </div>
       </section>
 

@@ -1,25 +1,28 @@
 'use client'
 
-import { useState } from 'react'
 import { RadioGroup } from '@headlessui/react'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
-import { CreditCardIcon, BanknotesIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline'
+import { BanknotesIcon } from '@heroicons/react/24/outline'
 import { PaymentMethod } from '@lekker/shared-types'
 
 interface PaymentMethodSelectorProps {
   isPurmerend: boolean
-  isDelivery: boolean
-  selectedMethod: string
+  deliveryMethod: 'delivery' | 'pickup'
+  value: string
   onChange: (method: string) => void
+  availableMethods?: string[]
 }
 
 export function PaymentMethodSelector({ 
-  isPurmerend, 
-  isDelivery, 
-  selectedMethod,
-  onChange 
+  isPurmerend,
+  deliveryMethod,
+  value,
+  onChange,
+  availableMethods,
 }: PaymentMethodSelectorProps) {
-  const paymentMethods: PaymentMethod[] = [
+  const isDelivery = deliveryMethod === 'delivery'
+
+  const paymentMethods: (PaymentMethod & { icon: JSX.Element; description: string })[] = [
     { 
       id: 'ideal', 
       label: 'iDEAL', 
@@ -28,21 +31,7 @@ export function PaymentMethodSelector({
       description: 'Betaal veilig met je eigen bank'
     },
     { 
-      id: 'card', 
-      label: 'Creditcard', 
-      available: true,
-      icon: <CreditCardIcon className="w-6 h-6" />,
-      description: 'Visa, Mastercard, American Express'
-    },
-    { 
-      id: 'bank', 
-      label: 'Bankoverschrijving', 
-      available: true,
-      icon: <BuildingLibraryIcon className="w-6 h-6" />,
-      description: 'Handmatige overschrijving'
-    },
-    { 
-      id: 'cod', 
+      id: 'cash', 
       label: 'Contant bij levering', 
       available: isPurmerend && isDelivery,
       icon: <BanknotesIcon className="w-6 h-6" />,
@@ -50,16 +39,16 @@ export function PaymentMethodSelector({
     }
   ]
 
-  const availableMethods = paymentMethods.filter(method => method.available)
+  let methods = paymentMethods.filter(m => m.available)
+  if (availableMethods && availableMethods.length > 0) {
+    const set = new Set(availableMethods)
+    methods = methods.filter(m => set.has(m.id))
+  }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">
-        Betaalmethode
-      </h3>
-      
-      <RadioGroup value={selectedMethod} onChange={onChange} className="space-y-2">
-        {availableMethods.map((method) => (
+      <RadioGroup value={value} onChange={onChange} className="space-y-2">
+        {methods.map((method) => (
           <RadioGroup.Option
             key={method.id}
             value={method.id}

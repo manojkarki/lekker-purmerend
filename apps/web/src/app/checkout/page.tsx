@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { CakeIcon, MapPinIcon, CreditCardIcon, BanknotesIcon } from '@heroicons/react/24/outline'
+import { CakeIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import { PaymentMethodSelector } from '@/components/PaymentMethodSelector'
 import { useCart } from '@/contexts/CartContext'
 
@@ -20,7 +20,7 @@ interface CheckoutData {
     city: string
     postalCode: string
   }
-  paymentMethod: 'ideal' | 'card' | 'banktransfer' | 'cash'
+  paymentMethod: 'ideal' | 'cash'
   notes: string
 }
 
@@ -80,8 +80,8 @@ export default function CheckoutPage() {
 
   const isPurmerend = checkoutData.address?.city?.toLowerCase() === 'purmerend'
   const availablePaymentMethods = checkoutData.deliveryMethod === 'delivery' && isPurmerend 
-    ? ['ideal', 'card', 'banktransfer', 'cash']
-    : ['ideal', 'card', 'banktransfer']
+    ? ['ideal', 'cash']
+    : ['ideal']
 
   return (
     <div className="min-h-screen bg-gray-50">

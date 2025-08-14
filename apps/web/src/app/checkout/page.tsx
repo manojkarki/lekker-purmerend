@@ -25,7 +25,7 @@ interface CheckoutData {
 }
 
 export default function CheckoutPage() {
-  const { cart } = useCart()
+  const { cart, clearCart } = useCart()
   const [checkoutData, setCheckoutData] = useState<CheckoutData>({
     deliveryMethod: 'delivery',
     customer: {
@@ -55,11 +55,54 @@ export default function CheckoutPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Mock order processing
-    setTimeout(() => {
-      alert('Demo: Bestelling succesvol geplaatst! Je ontvangt een bevestiging per email.')
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...checkoutData,
+          cartItems,
+          subtotal,
+          deliveryFee,
+          total,
+        }),
+      })
+
+      if (res.status === 202) {
+        const data = await res.json()
+        if (data.redirectUrl) {
+          window.location.href = data.redirectUrl
+          return
+        }
+        alert('iDEAL betaling wordt voorbereid...')
+        setIsSubmitting(false)
+        return
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Checkout mislukt' }))
+        alert(err.error || 'Checkout mislukt')
+        setIsSubmitting(false)
+        return
+      }
+
+      const data = await res.json()
+      
+      // Clear the cart on successful order
+      clearCart()
+      
+      // Redirect to success page with order details
+      const params = new URLSearchParams({
+        orderId: data.orderId || 'unknown',
+        payment: checkoutData.paymentMethod,
+        delivery: checkoutData.deliveryMethod
+      })
+      
+      window.location.href = `/bestelling-geplaatst?${params.toString()}`
+    } catch (err) {
+      alert('Er ging iets mis tijdens het afrekenen')
       setIsSubmitting(false)
-    }, 2000)
+    }
   }
 
   const updateField = (field: string, value: any) => {

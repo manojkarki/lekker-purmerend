@@ -131,8 +131,24 @@ export async function getAllProducts(): Promise<Product[]> {
     return Promise.resolve(mockProducts)
   }
 
+  // Check if we're running in the browser
+  if (typeof window !== 'undefined') {
+    try {
+      console.log('🌐 Fetching products from API route (client-side)')
+      const response = await fetch('/api/products')
+      if (!response.ok) {
+        throw new Error(`API responded with status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.products || []
+    } catch (error) {
+      console.error('❌ Error fetching products from API route, falling back to mock data:', error)
+      return mockProducts
+    }
+  }
+
   try {
-    console.log('🌐 Fetching products from Medusa API')
+    console.log('🌐 Fetching products from Medusa API (server-side)')
     const { products } = await medusaClient.products.list()
     return products.map(transformMedusaProduct)
   } catch (error) {

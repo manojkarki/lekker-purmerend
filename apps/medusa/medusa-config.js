@@ -71,16 +71,16 @@ const modules = {
   },
 }
 
-// Add Stripe payment processor - temporarily disabled for debugging
-// if (process.env.STRIPE_SECRET_KEY) {
-//   plugins.push({
-//     resolve: `medusa-payment-stripe`,
-//     options: {
-//       api_key: process.env.STRIPE_SECRET_KEY,
-//       webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
-//     },
-//   })
-// }
+// Add Stripe payment processor when env keys are present
+if (process.env.STRIPE_SECRET_KEY) {
+  plugins.push({
+    resolve: `medusa-payment-stripe`,
+    options: {
+      api_key: process.env.STRIPE_SECRET_KEY,
+      webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+    },
+  })
+}
 
 /** @type {import('@medusajs/medusa').ConfigModule} */
 module.exports = {

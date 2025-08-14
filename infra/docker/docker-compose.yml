@@ -54,6 +54,8 @@ services:
       COOKIE_SECRET: ${COOKIE_SECRET:-your-cookie-secret-here}
       NODE_ENV: development
       MEDUSA_ADMIN_ONBOARDING_TYPE: default
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     ports:
       - "9000:9000"
     # Use only uploads volume; do not mount source to avoid overriding the built app

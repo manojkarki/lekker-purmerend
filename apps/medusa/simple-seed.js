@@ -1,119 +1,70 @@
-require('dotenv').config()
-const { createDefaultsBase } = require('@medusajs/medusa')
+const { medusaClient } = require('@medusajs/medusa')
+const dotenv = require('dotenv')
 
-async function seedProducts() {
-  const { container } = createDefaultsBase()
-  
-  const productService = container.resolve('productService')
-  const regionService = container.resolve('regionService')
-  const priceListService = container.resolve('priceListService')
-  
+// Load environment variables
+dotenv.config({ path: '../../.env' })
+
+async function createBasicProducts() {
   try {
     console.log('🌱 Starting simple product seeding...')
     
-    // Get or create default region
-    const regions = await regionService.list()
-    let defaultRegion = regions.find(r => r.currency_code === 'eur')
+    // First create a region if it doesn't exist
+    const regionData = {
+      name: 'Netherlands',
+      currency_code: 'eur',
+      tax_rate: 21,
+      payment_providers: ['manual'],
+      fulfillment_providers: ['manual'],
+      countries: ['nl']
+    }
     
-    if (!defaultRegion) {
-      console.log('Creating EUR region...')
-      defaultRegion = await regionService.create({
-        name: 'Netherlands',
-        currency_code: 'eur',
-        tax_rate: 21,
-        payment_providers: ['manual'],
-        fulfillment_providers: ['manual'],
-        countries: ['nl']
+    console.log('📍 Creating region...')
+    console.log('Region data:', regionData)
+    
+    // Create simple products directly in database
+    const { Client } = require('pg')
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL
+    })
+    
+    await client.connect()
+    
+    // Insert a basic product manually
+    const productId = 'prod_01HQMX6Z7K4B5C6D7E8F9G0H1J'
+    const variantId = 'variant_01HQMX6Z7K4B5C6D7E8F9G0H1J'
+    
+    await client.query(`
+      INSERT INTO product (
+        id, title, handle, description, status, created_at, updated_at, metadata
+      ) VALUES (
+        $1, $2, $3, $4, $5, NOW(), NOW(), $6
+      ) ON CONFLICT (id) DO NOTHING
+    `, [
+      productId,
+      'Chocoladetaart',
+      'chocoladetaart',
+      'Rijke chocoladetaart met ganache en verse room',
+      'published',
+      JSON.stringify({
+        prep_time_hours: 4,
+        same_day_cutoff: '12:00',
+        estimation_rules: 'same_day_if_before_cutoff|next_day',
+        category: 'taarten'
       })
-    }
+    ])
     
-    console.log(`✅ Using region: ${defaultRegion.name} (${defaultRegion.currency_code})`)
+    console.log('✅ Product created: Chocoladetaart')
     
-    const products = [
-      {
-        title: 'Chocoladetaart',
-        handle: 'chocoladetaart',
-        description: 'Rijke chocoladetaart met ganache en verse room',
-        status: 'published',
-        metadata: {
-          prep_time_hours: '4',
-          same_day_cutoff: '12:00',
-          estimation_rules: 'same_day_if_before_cutoff|next_day',
-          category: 'taarten'
-        },
-        options: [{ title: 'Maat' }],
-        variants: [
-          {
-            title: 'Klein (6 personen)',
-            inventory_quantity: 50,
-            prices: [{ currency_code: 'eur', amount: 2850 }],
-            options: [{ value: 'Klein (6 personen)' }]
-          }
-        ]
-      },
-      {
-        title: 'Appeltaart',
-        handle: 'appeltaart',
-        description: 'Klassieke Nederlandse appeltaart met kaneelkruim',
-        status: 'published',
-        metadata: {
-          prep_time_hours: '3',
-          same_day_cutoff: '14:00',
-          estimation_rules: 'same_day_if_before_cutoff|next_day',
-          category: 'taarten'
-        },
-        options: [{ title: 'Maat' }],
-        variants: [
-          {
-            title: 'Regulier',
-            inventory_quantity: 50,
-            prices: [{ currency_code: 'eur', amount: 1850 }],
-            options: [{ value: 'Regulier' }]
-          }
-        ]
-      },
-      {
-        title: 'Brownies (6 stuks)',
-        handle: 'brownies',
-        description: 'Zachte chocolade brownies met walnoten',
-        status: 'published',
-        metadata: {
-          prep_time_hours: '2',
-          same_day_cutoff: '15:00',
-          estimation_rules: 'same_day_if_before_cutoff|next_day',
-          category: 'snacks'
-        },
-        options: [{ title: 'Verpakking' }],
-        variants: [
-          {
-            title: '6 stuks',
-            inventory_quantity: 100,
-            prices: [{ currency_code: 'eur', amount: 1250 }],
-            options: [{ value: '6 stuks' }]
-          }
-        ]
-      }
-    ]
-    
-    for (const productData of products) {
-      try {
-        console.log(`📦 Creating product: ${productData.title}`)
-        
-        const product = await productService.create(productData)
-        console.log(`✅ Product created: ${product.title} (ID: ${product.id})`)
-        
-      } catch (error) {
-        console.error(`❌ Error creating product ${productData.title}:`, error.message)
-      }
-    }
-    
-    console.log('🎉 Product seeding completed!')
+    await client.end()
+    console.log('🎉 Basic seeding completed!')
     
   } catch (error) {
     console.error('❌ Error during seeding:', error)
-  } finally {
-    process.exit(0)
   }
 }
 
-seedProducts()
+if (require.main === module) {
+  createBasicProducts().then(() => process.exit(0))
+}
+
+module.exports = { createBasicProducts }

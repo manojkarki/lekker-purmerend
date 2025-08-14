@@ -1,51 +1,35 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CakeIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
 import { useCart } from '@/contexts/CartContext'
+import { getAllProducts, type Product } from '@/services/products'
 
 export default function ProductenPage() {
   const { cart } = useCart()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  
-  // Mock product data
-  const products = [
-    {
-      id: '1',
-      title: 'Chocoladetaart',
-      handle: 'chocoladetaart',
-      description: 'Rijke chocoladetaart met ganache en verse room',
-      price: 2850,
-      image: '🍫',
-      prep_time_hours: 4,
-      same_day_cutoff: '12:00',
-      category: 'taarten'
-    },
-    {
-      id: '2',
-      title: 'Appeltaart',
-      handle: 'appeltaart',
-      description: 'Klassieke Nederlandse appeltaart met kaneelkruim',
-      price: 1850,
-      image: '🍎',
-      prep_time_hours: 3,
-      same_day_cutoff: '14:00',
-      category: 'taarten'
-    },
-    {
-      id: '3',
-      title: 'Brownies (6 stuks)',
-      handle: 'brownies',
-      description: 'Zachte chocolade brownies met walnoten',
-      price: 1250,
-      image: '🧁',
-      prep_time_hours: 2,
-      same_day_cutoff: '15:00',
-      category: 'snacks'
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true)
+        const productData = await getAllProducts()
+        setProducts(productData)
+      } catch (err) {
+        setError('Er ging iets mis bij het laden van de producten')
+        console.error('Error loading products:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    loadProducts()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -140,9 +124,24 @@ export default function ProductenPage() {
           </p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-lg text-gray-600">Producten laden...</div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-lg text-red-600">{error}</div>
+          </div>
+        )}
+
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {products.map((product) => (
+        {!loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {products.map((product) => (
             <div key={product.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
               <div className="aspect-product bg-gray-100 flex items-center justify-center text-6xl">
                 {product.image}
@@ -179,7 +178,8 @@ export default function ProductenPage() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
       
       {/* Extra bottom spacing for mobile scroll */}

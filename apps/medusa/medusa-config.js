@@ -18,10 +18,11 @@ switch (process.env.NODE_ENV) {
 }
 
 try {
-  dotenv.config({ path: process.cwd() + "/" + ENV_FILE_NAME })
+  // Try root level .env first (monorepo setup)
+  dotenv.config({ path: "../../" + ENV_FILE_NAME })
 } catch (e) {
-  // Fallback to root level .env
-  dotenv.config({ path: "../../.env" })
+  // Fallback to local .env
+  dotenv.config({ path: process.cwd() + "/" + ENV_FILE_NAME })
 }
 
 // CORS when consuming Medusa from admin
@@ -44,16 +45,15 @@ const plugins = [
       upload_dir: "uploads",
     },
   },
-  // Disable admin UI for now due to dependency issues
-  // {
-  //   resolve: "@medusajs/admin",
-  //   options: {
-  //     autoRebuild: true,
-  //     develop: {
-  //       open: false,
-  //     },
-  //   },
-  // },
+  {
+    resolve: "@medusajs/admin",
+    options: {
+      autoRebuild: true,
+      develop: {
+        open: false,
+      },
+    },
+  },
 ]
 
 const modules = {
@@ -71,16 +71,16 @@ const modules = {
   },
 }
 
-// Add Stripe payment processor
-if (process.env.STRIPE_SECRET_KEY) {
-  plugins.push({
-    resolve: `medusa-payment-stripe`,
-    options: {
-      api_key: process.env.STRIPE_SECRET_KEY,
-      webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
-    },
-  })
-}
+// Add Stripe payment processor - temporarily disabled for debugging
+// if (process.env.STRIPE_SECRET_KEY) {
+//   plugins.push({
+//     resolve: `medusa-payment-stripe`,
+//     options: {
+//       api_key: process.env.STRIPE_SECRET_KEY,
+//       webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+//     },
+//   })
+// }
 
 /** @type {import('@medusajs/medusa').ConfigModule} */
 module.exports = {
@@ -90,8 +90,7 @@ module.exports = {
     store_cors: STORE_CORS,
     database_url: DATABASE_URL,
     admin_cors: ADMIN_CORS,
-    // Uncomment the following lines to enable HTTPS
-    // redis_url: REDIS_URL
+    redis_url: REDIS_URL
   },
   plugins,
   modules,

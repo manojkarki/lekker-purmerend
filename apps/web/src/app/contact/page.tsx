@@ -248,8 +248,8 @@ export default function ContactPage() {
                   <div>
                     <p className="font-semibold text-gray-900">Adres</p>
                     <p className="text-gray-600">
-                      Hoofdstraat 123<br />
-                      1441 AA Purmerend<br />
+                      Albert John Luthulistraat 90<br />
+                      1447 XG Purmerend<br />
                       Nederland
                     </p>
                   </div>

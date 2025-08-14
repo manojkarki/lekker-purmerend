@@ -6,105 +6,47 @@ import { CakeIcon, ShoppingCartIcon, HeartIcon, ClockIcon, MapPinIcon, Bars3Icon
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
 import { ProductGallery } from '@/components/ProductGallery'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
-
-interface Product {
-  id: string
-  title: string
-  handle: string
-  description: string
-  price: number
-  image: string
-  prep_time_hours: number
-  same_day_cutoff: string
-  category: string
-  gallery?: string[]
-  ingredients?: string[]
-  allergens?: string[]
-  nutrition?: {
-    calories: number
-    fat: number
-    carbs: number
-    protein: number
-  }
-}
+import { getProductByHandle, getAllProducts, type Product } from '@/services/products'
 
 export default function ProductDetailPage({ params }: { params: { handle: string } }) {
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { addItem, cart } = useCart()
-  
-  // Mock product data (same as in products page)
-  const products: Product[] = [
-    {
-      id: '1',
-      title: 'Chocoladetaart',
-      handle: 'chocoladetaart',
-      description: 'Rijke chocoladetaart met ganache en verse room. Deze luxueuze taart wordt gemaakt met de beste Belgische chocolade en vers geklopte room. Perfect voor speciale gelegenheden.',
-      price: 2850,
-      image: '🍫',
-      prep_time_hours: 4,
-      same_day_cutoff: '12:00',
-      category: 'taarten',
-      gallery: ['🍫', '🍰', '🎂'],
-      ingredients: ['Belgische chocolade', 'Verse room', 'Eieren', 'Boter', 'Suiker', 'Bloem', 'Vanille'],
-      allergens: ['Gluten', 'Lactose', 'Eieren'],
-      nutrition: {
-        calories: 450,
-        fat: 28,
-        carbs: 42,
-        protein: 8
-      }
-    },
-    {
-      id: '2',
-      title: 'Appeltaart',
-      handle: 'appeltaart',
-      description: 'Klassieke Nederlandse appeltaart met kaneelkruim. Gemaakt met verse Goudreinet appels en huisgemaakte kruimlaag.',
-      price: 1850,
-      image: '🍎',
-      prep_time_hours: 3,
-      same_day_cutoff: '14:00',
-      category: 'taarten',
-      gallery: ['🍎', '🥧', '🍰'],
-      ingredients: ['Goudreinet appels', 'Bloem', 'Boter', 'Suiker', 'Kaneel', 'Rozijnen'],
-      allergens: ['Gluten', 'Lactose'],
-      nutrition: {
-        calories: 320,
-        fat: 14,
-        carbs: 48,
-        protein: 4
-      }
-    },
-    {
-      id: '3',
-      title: 'Brownies (6 stuks)',
-      handle: 'brownies',
-      description: 'Zachte chocolade brownies met walnoten. Deze fudgy brownies zijn rijk aan chocolade en hebben een perfecte chewy textuur.',
-      price: 1250,
-      image: '🧁',
-      prep_time_hours: 2,
-      same_day_cutoff: '15:00',
-      category: 'snacks',
-      gallery: ['🧁', '🍫', '🥜'],
-      ingredients: ['Pure chocolade', 'Walnoten', 'Boter', 'Eieren', 'Suiker', 'Bloem'],
-      allergens: ['Gluten', 'Lactose', 'Eieren', 'Noten'],
-      nutrition: {
-        calories: 380,
-        fat: 22,
-        carbs: 38,
-        protein: 6
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        setLoading(true)
+        const [productData, allProducts] = await Promise.all([
+          getProductByHandle(params.handle),
+          getAllProducts()
+        ])
+        
+        if (!productData) {
+          notFound()
+          return
+        }
+        
+        setProduct(productData)
+        // Set related products (exclude current product)
+        setRelatedProducts(allProducts.filter(p => p.id !== productData.id))
+      } catch (err) {
+        setError('Er ging iets mis bij het laden van het product')
+        console.error('Error loading product:', err)
+      } finally {
+        setLoading(false)
       }
     }
-  ]
 
-  const product = products.find(p => p.handle === params.handle)
-
-  if (!product) {
-    notFound()
-  }
+    loadProduct()
+  }, [params.handle])
 
   const handleAddToCart = () => {
     if (!product) return
@@ -126,6 +68,22 @@ export default function ProductDetailPage({ params }: { params: { handle: string
     
     // Reset quantity
     setQuantity(1)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg text-gray-600">Product laden...</div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg text-red-600">{error || 'Product niet gevonden'}</div>
+      </div>
+    )
   }
 
   return (
@@ -370,7 +328,7 @@ export default function ProductDetailPage({ params }: { params: { handle: string
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-4">
-            {products.filter(p => p.id !== product.id).map((relatedProduct) => (
+            {relatedProducts.map((relatedProduct) => (
               <Link 
                 key={relatedProduct.id}
                 href={`/producten/${relatedProduct.handle}`}

@@ -52,7 +52,7 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
       COOKIE_SECRET: ${COOKIE_SECRET:-your-cookie-secret-here}
-      NODE_ENV: production
+      NODE_ENV: development
       MEDUSA_ADMIN_ONBOARDING_TYPE: default
     ports:
       - "9000:9000"

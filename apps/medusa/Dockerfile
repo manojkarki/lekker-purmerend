@@ -25,6 +25,5 @@ RUN npx --yes medusa-admin build --path /app
 
 EXPOSE 9000
 
-# Start the server; Admin will be served at /app in production
-ENV NODE_ENV=production
+# Start the server; Admin will be served at /app
 CMD ["pnpm", "start"]

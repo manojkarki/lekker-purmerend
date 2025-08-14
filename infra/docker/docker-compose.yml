@@ -36,12 +36,11 @@ services:
       timeout: 10s
       retries: 3
 
-  # Medusa backend will run on host for development
-  # This is just for production deployment
   medusa:
     build:
-      context: ../../apps/medusa
-      dockerfile: Dockerfile
+      # Build from monorepo root so workspace packages are available
+      context: ../..
+      dockerfile: apps/medusa/Dockerfile
     container_name: lekker-medusa
     depends_on:
       postgres:
@@ -53,13 +52,13 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
       COOKIE_SECRET: ${COOKIE_SECRET:-your-cookie-secret-here}
-      NODE_ENV: development
+      NODE_ENV: production
       MEDUSA_ADMIN_ONBOARDING_TYPE: default
     ports:
       - "9000:9000"
+    # Use only uploads volume; do not mount source to avoid overriding the built app
     volumes:
-      - ../../apps/medusa:/app
-      - medusa_uploads:/app/uploads
+      - medusa_uploads:/app/apps/medusa/uploads
     networks:
       - lekker-network
     profiles:

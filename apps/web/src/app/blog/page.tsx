@@ -1,91 +1,57 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CakeIcon, CalendarIcon, ClockIcon, ShoppingCartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useCart } from '@/contexts/CartContext'
+import { strapiAPI } from '@/lib/strapi'
+import { BlogPost } from '@lekker/shared-types'
 
 export default function BlogPage() {
   const { cart } = useCart()
   const [selectedCategory, setSelectedCategory] = useState('Alle berichten')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  
-  // Mock blog data
-  const posts = [
-    {
-      id: 1,
-      title: 'De perfecte chocoladetaart: tips van een bakker',
-      slug: 'perfecte-chocoladetaart-tips',
-      excerpt: 'Ontdek de geheimen achter onze populairste chocoladetaart en leer hoe je thuis de perfecte textuur kunt bereiken.',
-      publishedAt: '2025-01-10',
-      readingTime: 5,
-      category: 'Recepten',
-      featured: true,
-      coverImage: '🍫'
-    },
-    {
-      id: 2,
-      title: 'Seizoensgebonden ingrediënten in de winter',
-      slug: 'seizoensgebonden-ingredienten-winter',
-      excerpt: 'Waarom we in de winter kiezen voor bepaalde ingrediënten en hoe dit de smaak van onze producten beïnvloedt.',
-      publishedAt: '2025-01-08',
-      readingTime: 3,
-      category: 'Achter de schermen',
-      featured: false,
-      coverImage: '🍎'
-    },
-    {
-      id: 3,
-      title: 'Nieuwe stroopwafel receptuur gelanceerd!',
-      slug: 'nieuwe-stroopwafel-receptuur',
-      excerpt: 'Na maanden testen hebben we onze stroopwafel receptuur geperfectioneerd. Proef het verschil!',
-      publishedAt: '2025-01-05',
-      readingTime: 2,
-      category: 'Nieuws',
-      featured: false,
-      coverImage: '🥧'
-    },
-    {
-      id: 4,
-      title: '5 tips voor het bewaren van je taart',
-      slug: 'tips-bewaren-taart',
-      excerpt: 'Leer hoe je je huisgemaakte taart het beste kunt bewaren voor optimale versheid en smaak.',
-      publishedAt: '2025-01-03',
-      readingTime: 4,
-      category: 'Tips',
-      featured: false,
-      coverImage: '💡'
-    },
-    {
-      id: 5,
-      title: 'Glutenvrije alternatieven: zo doe je dat',
-      slug: 'glutenvrije-alternatieven-tips',
-      excerpt: 'Praktische tips voor het maken van heerlijke glutenvrije gebakjes zonder in te leveren op smaak.',
-      publishedAt: '2025-01-01',
-      readingTime: 6,
-      category: 'Tips',
-      featured: false,
-      coverImage: '🌾'
-    },
-    {
-      id: 6,
-      title: 'Ons nieuwe atelier: een kijkje achter de schermen',
-      slug: 'nieuw-atelier-achter-schermen',
-      excerpt: 'We nemen je mee voor een rondleiding door ons vernieuwde atelier waar alle magie gebeurt.',
-      publishedAt: '2024-12-28',
-      readingTime: 3,
-      category: 'Achter de schermen',
-      featured: false,
-      coverImage: '🏠'
-    }
-  ]
+  const [posts, setPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Category mapping from Strapi enum values to display labels
+  const categoryMapping = {
+    'recepten': 'Recepten',
+    'tips': 'Tips', 
+    'nieuws': 'Nieuws',
+    'achter-de-schermen': 'Achter de schermen'
+  }
 
   const categories = ['Alle berichten', 'Recepten', 'Tips', 'Nieuws', 'Achter de schermen']
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        setLoading(true)
+        const result = await strapiAPI.getPosts()
+        setPosts(result.data || [])
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching posts:', err)
+        setError('Er ging iets mis bij het laden van de blogberichten. Probeer het later opnieuw.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [])
   
   // Filter posts based on selected category
   const filteredPosts = selectedCategory === 'Alle berichten' 
     ? posts 
-    : posts.filter(post => post.category === selectedCategory)
+    : posts.filter(post => {
+        const attributes = post.attributes
+        if (!attributes) return false
+        const postCategory = categoryMapping[attributes.category] || attributes.category
+        return postCategory === selectedCategory
+      })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -197,50 +163,94 @@ export default function BlogPage() {
           ))}
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Blogberichten laden...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-red-800">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Blog Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post) => (
-            <article key={post.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
-              <div className="aspect-video bg-gray-100 flex items-center justify-center text-4xl">
-                {post.coverImage}
-              </div>
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPosts.map((post) => {
+              if (!post.attributes) return null
               
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">
-                    {post.category}
-                  </span>
-                </div>
-                
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {post.title}
-                </h3>
-                
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {post.excerpt}
-                </p>
-                
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <div className="flex items-center gap-1">
-                    <CalendarIcon className="w-3 h-3" />
-                    {new Date(post.publishedAt).toLocaleDateString('nl-NL')}
+              const { attributes } = post
+              const coverImageUrl = strapiAPI.getImageUrl(attributes.coverImage)
+              const displayCategory = categoryMapping[attributes.category] || attributes.category
+              
+              return (
+                <article key={post.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                    {coverImageUrl ? (
+                      <img 
+                        src={coverImageUrl}
+                        alt={attributes.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-4xl">📝</div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <ClockIcon className="w-3 h-3" />
-                    {post.readingTime} min
+                  
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                        {displayCategory}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {attributes.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      {attributes.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <div className="flex items-center gap-1">
+                        <CalendarIcon className="w-3 h-3" />
+                        {new Date(attributes.publishedAt).toLocaleDateString('nl-NL')}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ClockIcon className="w-3 h-3" />
+                        {attributes.readingTime || 3} min
+                      </div>
+                    </div>
+                    
+                    <Link
+                      href={`/blog/${attributes.slug}`}
+                      className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+                    >
+                      Lees verder →
+                    </Link>
                   </div>
-                </div>
-                
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="text-primary-600 hover:text-primary-700 font-medium text-sm"
-                >
-                  Lees verder →
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+                </article>
+              )
+            }).filter(Boolean)}
+          </div>
+        )}
+
+        {/* No Posts Message */}
+        {!loading && !error && filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto">
+              <p className="text-gray-600">Geen blogberichten gevonden voor deze categorie.</p>
+            </div>
+          </div>
+        )}
 
         {/* Newsletter CTA */}
         <div className="mt-16 bg-white rounded-lg shadow-sm border p-8 text-center">

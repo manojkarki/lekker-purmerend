@@ -28,24 +28,55 @@ export interface PaymentMethod {
 
 export interface BlogPost {
   id: number;
-  title: string;
-  slug: string;
-  content: string;
+  // For backward compatibility with mock data
+  title?: string;
+  slug?: string;
+  content?: string;
   excerpt?: string;
-  coverImage?: {
+  category?: string;
+  readingTime?: number;
+  featured?: boolean;
+  coverImage?: string | {
     url: string;
     alternativeText?: string;
   };
-  seo?: {
-    title?: string;
-    description?: string;
-    ogImage?: {
-      url: string;
+  author?: string;
+  tags?: string[];
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // Strapi API response structure
+  attributes?: {
+    title: string;
+    slug: string;
+    content: string;
+    excerpt?: string;
+    category: 'recepten' | 'tips' | 'nieuws' | 'achter-de-schermen';
+    readingTime?: number;
+    featured?: boolean;
+    coverImage?: {
+      data?: {
+        attributes?: {
+          url: string;
+          alternativeText?: string;
+        };
+      };
     };
+    seo?: {
+      title?: string;
+      description?: string;
+      ogImage?: {
+        data?: {
+          attributes?: {
+            url: string;
+          };
+        };
+      };
+    };
+    publishedAt: string;
+    createdAt: string;
+    updatedAt: string;
   };
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PurmerendDetection {

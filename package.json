@@ -3,8 +3,10 @@
   "private": true,
   "description": "Homemade food e-commerce platform for Purmerend",
   "scripts": {
-    "dev": "bash scripts/dev-stop.sh && pnpm dev:infra && docker compose -f infra/docker/docker-compose.yml up -d medusa && concurrently -k -p [{name}] -n strapi,web -c magenta,green \"pnpm -F @lekker/strapi dev\" \"pnpm -F @lekker/web dev\"",
-    "dev:infra": "docker compose -f infra/docker/docker-compose.yml up -d postgres redis",
+    "dev": "bash scripts/dev-stop.sh && docker compose -f infra/docker/docker-compose.yml up --build",
+    "dev:infra": "docker compose -f infra/docker/docker-compose.yml up -d postgres redis medusa strapi",
+    "dev:apps": "concurrently -k -p [{name}] -n strapi,web -c magenta,green \"pnpm -F @lekker/strapi dev\" \"pnpm -F @lekker/web dev\"",
+    "dev:hybrid": "bash scripts/dev-stop.sh && pnpm dev:infra && pnpm dev:apps",
     "dev:web": "pnpm -F @lekker/web dev",
     "dev:medusa": "pnpm -F @lekker/medusa dev",
     "dev:strapi": "pnpm -F @lekker/strapi dev",
@@ -18,7 +20,9 @@
     "docker:up": "docker compose -f infra/docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f infra/docker/docker-compose.yml down",
     "docker:logs": "docker compose -f infra/docker/docker-compose.yml logs -f",
-    "clean": "pnpm --recursive clean && docker compose -f infra/docker/docker-compose.yml down -v"
+    "clean": "pnpm --recursive clean && docker compose -f infra/docker/docker-compose.yml down -v",
+    "dev:docker": "docker compose -f infra/docker/docker-compose.yml up",
+    "dev:docker:build": "docker compose -f infra/docker/docker-compose.yml up --build"
   },
   "devDependencies": {
     "typescript": "^5.3.0",

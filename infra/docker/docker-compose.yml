@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -63,10 +61,8 @@ services:
       - medusa_uploads:/app/apps/medusa/uploads
     networks:
       - lekker-network
-    profiles:
-      - production
 
-  # Strapi CMS will run on host for development
+  # Strapi CMS
   strapi:
     build:
       context: ../../apps/strapi
@@ -82,6 +78,7 @@ services:
       DATABASE_NAME: strapi
       DATABASE_USERNAME: medusa
       DATABASE_PASSWORD: medusa
+      STRAPI_DATABASE_URL: postgresql://medusa:medusa@postgres:5432/strapi
       APP_KEYS: ${STRAPI_APP_KEYS:-key1,key2,key3,key4}
       JWT_SECRET: ${STRAPI_JWT_SECRET:-your-strapi-jwt-secret}
       ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-your-admin-jwt-secret}
@@ -90,12 +87,41 @@ services:
     ports:
       - "1337:1337"
     volumes:
-      - ../../apps/strapi:/app
-      - strapi_uploads:/app/public/uploads
+      # Mount source code for hot reload in development
+      - ../../apps/strapi:/usr/src/app
+      - strapi_uploads:/usr/src/app/public/uploads
+      # Exclude node_modules from volume mounting to preserve built modules
+      - /usr/src/app/node_modules
     networks:
       - lekker-network
-    profiles:
-      - production
+
+  # Next.js Web Frontend
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    container_name: lekker-web
+    depends_on:
+      - medusa
+      - strapi
+    environment:
+      MEDUSA_BACKEND_URL: http://medusa:9000
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+      STRAPI_API_URL: http://strapi:1337/api
+      STRAPI_URL: http://localhost:1337
+      SITE_URL: http://localhost:3000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reload in development
+      - ../../apps/web:/monorepo/apps/web
+      - ../../packages:/monorepo/packages
+      # Prevent node_modules from being overwritten
+      - /monorepo/node_modules
+      - /monorepo/apps/web/.next
+    networks:
+      - lekker-network
 
 volumes:
   postgres_data:

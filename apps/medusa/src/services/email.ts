@@ -46,7 +46,7 @@ class EmailService extends TransactionBaseService {
         isDelivery,
         etaLabel,
         etaRange,
-        pickupAddress: process.env.PICKUP_ADDRESS,
+        pickupAddress: "Lekker Purmerend\nHuidenstraat 123\n1441 HZ Purmerend",
         deliveryAddress: isDelivery ? this.formatAddress(order.shipping_address) : undefined
       })
     }

@@ -1,8 +1,13 @@
 const { parse } = require("pg-connection-string");
 
 module.exports = ({ env }) => {
+  // Use postgres hostname when running in Docker, localhost when running on host
+  const defaultUrl = process.env.NODE_ENV === 'development' && process.env.DATABASE_HOST 
+    ? `postgresql://medusa:medusa@${process.env.DATABASE_HOST}:5432/strapi`
+    : "postgresql://medusa:medusa@localhost:5432/strapi";
+    
   const { host, port, database, user, password } = parse(
-    env("STRAPI_DATABASE_URL", "postgresql://medusa:medusa@localhost:5432/strapi")
+    env("STRAPI_DATABASE_URL", defaultUrl)
   );
 
   return {

@@ -45,21 +45,27 @@ class StrapiAPI {
     const searchParams = new URLSearchParams()
     
     // Pagination
-    if (options.limit) searchParams.set('pagination[limit]', options.limit.toString())
-    if (options.start) searchParams.set('pagination[start]', options.start.toString())
+    if (options.limit) searchParams.set('limit', options.limit.toString())
+    if (options.start) searchParams.set('start', options.start.toString())
     
     // Filters
-    if (options.featured) searchParams.set('filters[featured][$eq]', 'true')
-    if (options.category) searchParams.set('filters[category][$eq]', options.category)
-    
-    // Sort by creation date (newest first)
-    searchParams.set('sort', 'createdAt:desc')
-    
-    // Populate relations
-    searchParams.set('populate', 'coverImage,seo,seo.ogImage')
+    if (options.featured) searchParams.set('featured', 'true')
+    if (options.category) searchParams.set('category', options.category)
 
-    const result = await this.fetchAPI(`/posts?${searchParams.toString()}`)
-    return result
+    // Use the Next.js API route instead of calling Strapi directly
+    const url = `/api/blog?${searchParams.toString()}`
+    
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error(`Blog API Error:`, error)
+      throw error
+    }
   }
 
   async getPost(slug: string): Promise<BlogPost | null> {

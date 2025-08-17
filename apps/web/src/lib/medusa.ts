@@ -7,14 +7,4 @@ export const medusaClient = new Medusa({
   maxRetries: 3,
 })
 
-export type { 
-  Product,
-  ProductVariant,
-  LineItem,
-  Cart,
-  Order,
-  Region,
-  PaymentSession,
-  ShippingOption,
-  Customer 
-} from '@medusajs/medusa'
+// Medusa client instance for API calls

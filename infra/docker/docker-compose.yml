@@ -46,17 +46,19 @@ services:
       redis:
         condition: service_healthy
     environment:
+      # Override for container-to-container communication
       DATABASE_URL: postgresql://medusa:medusa@postgres:5432/medusa
       REDIS_URL: redis://redis:6379
+      # Medusa secrets need to be explicitly set in Docker
       JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
       COOKIE_SECRET: ${COOKIE_SECRET:-your-cookie-secret-here}
-      NODE_ENV: development
-      MEDUSA_ADMIN_ONBOARDING_TYPE: default
+      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:7000,http://localhost:7001}
+      STORE_CORS: ${STORE_CORS:-http://localhost:3000}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      NODE_ENV: development
     ports:
       - "9000:9000"
-    # Use only uploads volume; do not mount source to avoid overriding the built app
     volumes:
       - medusa_uploads:/app/apps/medusa/uploads
     networks:
@@ -72,13 +74,15 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_CLIENT: postgres
+      # Database connection for Strapi (overrides .env for container network)
       DATABASE_HOST: postgres
+      DATABASE_CLIENT: postgres
       DATABASE_PORT: 5432
       DATABASE_NAME: strapi
       DATABASE_USERNAME: medusa
       DATABASE_PASSWORD: medusa
       STRAPI_DATABASE_URL: postgresql://medusa:medusa@postgres:5432/strapi
+      # Strapi secrets need to be explicitly set in Docker
       APP_KEYS: ${STRAPI_APP_KEYS:-key1,key2,key3,key4}
       JWT_SECRET: ${STRAPI_JWT_SECRET:-your-strapi-jwt-secret}
       ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-your-admin-jwt-secret}
@@ -105,6 +109,7 @@ services:
       - medusa
       - strapi
     environment:
+      # Override for container-to-container communication
       MEDUSA_BACKEND_URL: http://medusa:9000
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
       STRAPI_API_URL: http://strapi:1337/api

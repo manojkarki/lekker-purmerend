@@ -51,7 +51,6 @@ export async function getAllProducts(): Promise<Product[]> {
   // Check if we're running in the browser
   if (typeof window !== 'undefined') {
     try {
-      console.log('🌐 Fetching products from API route (client-side)')
       const response = await fetch('/api/products')
       if (!response.ok) {
         throw new Error(`API responded with status: ${response.status}`)
@@ -59,40 +58,44 @@ export async function getAllProducts(): Promise<Product[]> {
       const data = await response.json()
       return data.products || []
     } catch (error) {
-      console.error('❌ Error fetching products from API route:', error)
+      console.error('Error fetching products from API route:', error)
       throw error
     }
   }
 
   try {
-    console.log('🌐 Fetching products from Medusa API (server-side)')
     const { products } = await medusaClient.products.list()
     return products.map(transformMedusaProduct)
   } catch (error) {
-    console.error('❌ Error fetching products from Medusa:', error)
+    console.error('Error fetching products from Medusa:', error)
     throw error
   }
 }
 
 export async function getProductByHandle(handle: string): Promise<Product | null> {
   try {
-    console.log(`🌐 Fetching product ${handle} from Medusa API`)
     const { products } = await medusaClient.products.list({ handle })
     const product = products?.[0]
     return product ? transformMedusaProduct(product) : null
   } catch (error) {
-    console.error(`❌ Error fetching product ${handle} from Medusa:`, error)
+    console.error(`Error fetching product ${handle} from Medusa:`, error)
     throw error
   }
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
   try {
-    console.log(`🌐 Fetching product ${id} from Medusa API`)
     const { product } = await medusaClient.products.retrieve(id)
     return product ? transformMedusaProduct(product) : null
   } catch (error) {
-    console.error(`❌ Error fetching product ${id} from Medusa:`, error)
+    console.error(`Error fetching product ${id} from Medusa:`, error)
     throw error
   }
+}
+
+// Service object for consistent API
+export const ProductService = {
+  getAllProducts,
+  getProductByHandle,
+  getProductById
 }

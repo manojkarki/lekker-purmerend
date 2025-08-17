@@ -1,46 +1,32 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CakeIcon, TruckIcon, HeartIcon, ClockIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { DeliveryBadge } from '@/components/DeliveryEstimate'
+import { ProductService } from '@/services/products'
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data for demonstration
-  const featuredProducts = [
-    {
-      id: '1',
-      title: 'Chocoladetaart',
-      handle: 'chocoladetaart',
-      description: 'Rijke chocoladetaart met verse room en ganache',
-      price: 2850,
-      images: ['/images/chocolate-cake-1.jpg', '/images/chocolate-cake-2.jpg'],
-      prep_time_hours: 4,
-      same_day_cutoff: '12:00'
-    },
-    {
-      id: '2',
-      title: 'Appeltaart',
-      handle: 'appeltaart',
-      description: 'Klassieke Nederlandse appeltaart met kaneelkruim',
-      price: 1850,
-      images: ['/images/apple-pie-1.jpg'],
-      prep_time_hours: 3,
-      same_day_cutoff: '14:00'
-    },
-    {
-      id: '3',
-      title: 'Brownies (6 stuks)',
-      handle: 'brownies',
-      description: 'Zachte chocolade brownies met walnoten',
-      price: 1250,
-      images: ['/images/brownies-1.jpg'],
-      prep_time_hours: 2,
-      same_day_cutoff: '15:00'
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const products = await ProductService.getAllProducts()
+        // Take first 3 products as featured
+        setFeaturedProducts(products.slice(0, 3))
+      } catch (error) {
+        console.error('Error fetching featured products:', error)
+        setFeaturedProducts([])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchProducts()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -183,41 +169,70 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {featuredProducts.map((product) => (
-              <div key={product.id} className="card">
-                <div className="aspect-product relative bg-gray-100">
-                  {/* Placeholder for product image */}
-                  <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                    🍰
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="card animate-pulse">
+                  <div className="aspect-product bg-gray-200"></div>
+                  <div className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                    <div className="flex items-center justify-between">
+                      <div className="h-8 w-16 bg-gray-200 rounded"></div>
+                      <div className="h-10 w-24 bg-gray-200 rounded"></div>
+                    </div>
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="mb-3">
-                    <DeliveryBadge 
-                      prepTimeHours={product.prep_time_hours}
-                      cutoffTime={product.same_day_cutoff}
-                    />
+              ))
+            ) : featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <div key={product.id} className="card">
+                  <div className="aspect-product relative bg-gray-100">
+                    {product.images && product.images.length > 0 ? (
+                      <img 
+                        src={product.images[0].url} 
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-6xl">
+                        🍰
+                      </div>
+                    )}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {product.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary-600">
-                      €{(product.price / 100).toFixed(2)}
-                    </span>
-                    <Link 
-                      href={`/producten/${product.handle}`}
-                      className="btn-primary"
-                    >
-                      Bestellen
-                    </Link>
+                  <div className="p-6">
+                    <div className="mb-3">
+                      <DeliveryBadge 
+                        prepTimeHours={product.metadata?.prep_time_hours || 4}
+                        cutoffTime={product.metadata?.same_day_cutoff || '12:00'}
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {product.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {product.description || 'Verse huisgemaakte lekkernij'}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-primary-600">
+                        €{((product.variants?.[0]?.prices?.[0]?.amount || 0) / 100).toFixed(2)}
+                      </span>
+                      <Link 
+                        href={`/producten/${product.handle}`}
+                        className="btn-primary"
+                      >
+                        Bestellen
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">Geen producten beschikbaar op dit moment.</p>
               </div>
-            ))}
+            )}
           </div>
           
           <div className="text-center mt-8 sm:mt-12">

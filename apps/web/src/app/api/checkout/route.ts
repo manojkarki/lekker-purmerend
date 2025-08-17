@@ -4,7 +4,6 @@ import { medusaClient } from '@/lib/medusa'
 export async function POST(req: NextRequest) {
   try {
     const payload = await req.json()
-    console.log('Checkout payload:', JSON.stringify(payload, null, 2))
     
     const {
       paymentMethod, // 'ideal' | 'cash'
@@ -14,7 +13,6 @@ export async function POST(req: NextRequest) {
       cartItems = [],
     } = payload || {}
 
-    console.log('Step 1: Creating cart...')
     // Try to create cart with sales_channel_id
     const cartResponse = await fetch('http://localhost:9000/store/carts', {
       method: 'POST',
@@ -34,10 +32,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { cart } = await cartResponse.json()
-    console.log('Cart created:', cart.id)
 
     // 2) Add line items
-    console.log('Step 2: Adding line items...')
     for (const item of cartItems) {
       try {
         // Find the product variant
@@ -61,17 +57,14 @@ export async function POST(req: NextRequest) {
 
         if (!addItemResponse.ok) {
           console.error('Failed to add item:', item.id)
-        } else {
-          console.log('Added item:', item.id)
         }
       } catch (err) {
-        console.log('Failed to add item:', item.id, err)
+        console.error('Failed to add item:', item.id, err)
       }
     }
 
     // 3) Set customer email
     if (customer?.email) {
-      console.log('Step 3: Setting customer email...')
       await fetch(`http://localhost:9000/store/carts/${cart.id}`, {
         method: 'POST',
         headers: {
@@ -83,7 +76,6 @@ export async function POST(req: NextRequest) {
 
     // 4) Set shipping address (for delivery)
     if (deliveryMethod === 'delivery' && address) {
-      console.log('Step 4: Setting shipping address...')
       await fetch(`http://localhost:9000/store/carts/${cart.id}`, {
         method: 'POST',
         headers: {
@@ -106,12 +98,10 @@ export async function POST(req: NextRequest) {
 
     // 5) Select shipping option
     try {
-      console.log('Step 5: Setting shipping method...')
       const shippingResponse = await fetch(`http://localhost:9000/store/shipping-options/${cart.region_id}`)
       
       if (shippingResponse.ok) {
         const { shipping_options } = await shippingResponse.json()
-        console.log('Available shipping options:', shipping_options?.length || 0)
         
         let option = shipping_options?.[0]
         if (shipping_options?.length) {
@@ -128,15 +118,13 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({ option_id: option.id }),
           })
-          console.log('Added shipping method:', option.id)
         }
       }
     } catch (err) {
-      console.log('Shipping method error:', err)
+      console.error('Shipping method error:', err)
     }
 
     // 6) Create payment sessions
-    console.log('Step 6: Creating payment sessions...')
     const paymentSessionsResponse = await fetch(`http://localhost:9000/store/carts/${cart.id}/payment-sessions`, {
       method: 'POST',
       headers: {
@@ -146,12 +134,9 @@ export async function POST(req: NextRequest) {
 
     if (!paymentSessionsResponse.ok) {
       console.error('Failed to create payment sessions')
-    } else {
-      console.log('Payment sessions created')
     }
 
     if (paymentMethod === 'cash') {
-      console.log('Step 7: Processing cash payment...')
       // Select manual payment and complete
       const selectPaymentResponse = await fetch(`http://localhost:9000/store/carts/${cart.id}/payment-sessions`, {
         method: 'POST',
@@ -173,7 +158,6 @@ export async function POST(req: NextRequest) {
         if (completeResponse.ok) {
           const completed = await completeResponse.json()
           const orderId = completed.order?.id || completed.data?.id || 'order'
-          console.log('Cash payment completed, order:', orderId)
           return NextResponse.json({
             status: 'ok',
             orderId,
@@ -184,7 +168,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (paymentMethod === 'ideal') {
-      console.log('Step 7: Processing iDEAL payment...')
       // In a real implementation, this would integrate with Stripe
       return NextResponse.json({
         status: 'pending',

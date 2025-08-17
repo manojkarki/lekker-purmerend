@@ -35,11 +35,7 @@ function transformMedusaProduct(medusaProduct: any) {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('API: Getting all products...')
-    
     const { products } = await medusaClient.products.list()
-    console.log(`API: Found ${products.length} products`)
-    
     const transformedProducts = products.map(transformMedusaProduct)
     
     return NextResponse.json({
@@ -48,7 +44,7 @@ export async function GET(request: NextRequest) {
       count: products.length
     })
   } catch (error) {
-    console.error('API: Error fetching products:', error)
+    console.error('Error fetching products:', error)
     return NextResponse.json(
       { 
         success: false, 

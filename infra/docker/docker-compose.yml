@@ -116,6 +116,11 @@ services:
       STRAPI_URL: http://localhost:1337
       SITE_URL: http://localhost:3000
       NODE_ENV: development
+      # Stripe configuration
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
     ports:
       - "3000:3000"
     volumes:

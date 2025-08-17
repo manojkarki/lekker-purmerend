@@ -10,7 +10,7 @@
       "name": "Nederland",
       "currency_code": "eur",
       "tax_rate": 21,
-      "payment_providers": ["manual"],
+      "payment_providers": ["manual", "stripe"],
       "fulfillment_providers": ["manual"],
       "countries": ["nl"]
     }

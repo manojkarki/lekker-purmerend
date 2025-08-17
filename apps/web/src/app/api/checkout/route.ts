@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { medusaClient } from '@/lib/medusa'
+import { createIDEALPaymentIntent } from '@/lib/stripe-server'
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,8 @@ export async function POST(req: NextRequest) {
     } = payload || {}
 
     // Try to create cart with sales_channel_id
-    const cartResponse = await fetch('http://localhost:9000/store/carts', {
+    const medusaUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+    const cartResponse = await fetch(`${medusaUrl}/store/carts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,14 +39,14 @@ export async function POST(req: NextRequest) {
     for (const item of cartItems) {
       try {
         // Find the product variant
-        const productResponse = await fetch(`http://localhost:9000/store/products/${item.id}`)
+        const productResponse = await fetch(`${medusaUrl}/store/products/${item.id}`)
         if (!productResponse.ok) continue
         
         const { product } = await productResponse.json()
         const variantId = product?.variants?.[0]?.id
         if (!variantId) continue
 
-        const addItemResponse = await fetch(`http://localhost:9000/store/carts/${cart.id}/line-items`, {
+        const addItemResponse = await fetch(`${medusaUrl}/store/carts/${cart.id}/line-items`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // 3) Set customer email
     if (customer?.email) {
-      await fetch(`http://localhost:9000/store/carts/${cart.id}`, {
+      await fetch(`${medusaUrl}/store/carts/${cart.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest) {
 
     // 4) Set shipping address (for delivery)
     if (deliveryMethod === 'delivery' && address) {
-      await fetch(`http://localhost:9000/store/carts/${cart.id}`, {
+      await fetch(`${medusaUrl}/store/carts/${cart.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +100,7 @@ export async function POST(req: NextRequest) {
 
     // 5) Select shipping option
     try {
-      const shippingResponse = await fetch(`http://localhost:9000/store/shipping-options/${cart.region_id}`)
+      const shippingResponse = await fetch(`${medusaUrl}/store/shipping-options/${cart.region_id}`)
       
       if (shippingResponse.ok) {
         const { shipping_options } = await shippingResponse.json()
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
         }
         
         if (option) {
-          await fetch(`http://localhost:9000/store/carts/${cart.id}/shipping-methods`, {
+          await fetch(`${medusaUrl}/store/carts/${cart.id}/shipping-methods`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -125,7 +127,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 6) Create payment sessions
-    const paymentSessionsResponse = await fetch(`http://localhost:9000/store/carts/${cart.id}/payment-sessions`, {
+    const paymentSessionsResponse = await fetch(`${medusaUrl}/store/carts/${cart.id}/payment-sessions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -138,7 +140,7 @@ export async function POST(req: NextRequest) {
 
     if (paymentMethod === 'cash') {
       // Select manual payment and complete
-      const selectPaymentResponse = await fetch(`http://localhost:9000/store/carts/${cart.id}/payment-sessions`, {
+      const selectPaymentResponse = await fetch(`${medusaUrl}/store/carts/${cart.id}/payment-sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +150,7 @@ export async function POST(req: NextRequest) {
 
       if (selectPaymentResponse.ok) {
         // Complete the cart
-        const completeResponse = await fetch(`http://localhost:9000/store/carts/${cart.id}/complete`, {
+        const completeResponse = await fetch(`${medusaUrl}/store/carts/${cart.id}/complete`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -168,12 +170,82 @@ export async function POST(req: NextRequest) {
     }
 
     if (paymentMethod === 'ideal') {
-      // In a real implementation, this would integrate with Stripe
-      return NextResponse.json({
-        status: 'pending',
-        message: 'iDEAL betaling wordt voorbereid...',
-        // redirectUrl would be provided by Stripe
-      }, { status: 202 })
+      let orderId: string | null = null
+      
+      try {
+        // Validate required fields for iDEAL
+        if (!customer?.email) {
+          throw new Error('Email is required for iDEAL payments')
+        }
+        
+        if (!payload.total || payload.total <= 0) {
+          throw new Error('Invalid order total for payment')
+        }
+
+        // First, complete the cart to create an order
+        const completeResponse = await fetch(`${medusaUrl}/store/carts/${cart.id}/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!completeResponse.ok) {
+          const errorText = await completeResponse.text()
+          console.error('Cart completion failed:', errorText)
+          throw new Error('Failed to create order. Please try again.')
+        }
+
+        const completed = await completeResponse.json()
+        orderId = completed.order?.id || completed.data?.id
+
+        if (!orderId) {
+          throw new Error('Order was created but no ID was returned')
+        }
+
+        console.log(`Order ${orderId} created, creating payment intent for €${(payload.total / 100).toFixed(2)}`)
+
+        // Create Stripe PaymentIntent for iDEAL
+        const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+        const paymentResult = await createIDEALPaymentIntent({
+          amount: payload.total,
+          currency: 'eur',
+          orderId,
+          customerEmail: customer.email,
+          returnUrl: `${siteUrl}/bestelling-geplaatst?orderId=${orderId}&payment=ideal&status=success`,
+          metadata: {
+            deliveryMethod: deliveryMethod || 'delivery',
+            customerName: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),
+            cartId: cart.id,
+          }
+        })
+
+        if (!paymentResult.success) {
+          console.error('Payment intent creation failed:', paymentResult.error)
+          throw new Error('Failed to initialize payment. Please try again.')
+        }
+
+        return NextResponse.json({
+          status: 'requires_payment',
+          orderId,
+          clientSecret: paymentResult.clientSecret,
+          message: 'iDEAL betaling wordt voorbereid...',
+        }, { status: 202 })
+
+      } catch (error) {
+        console.error('iDEAL payment creation failed:', error)
+        
+        // If we have an order ID, we should mark it as payment failed
+        if (orderId) {
+          console.log(`Marking order ${orderId} as payment failed due to error: ${error}`)
+          // TODO: Mark order as payment failed in Medusa
+        }
+
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create iDEAL payment'
+        return NextResponse.json({
+          error: errorMessage
+        }, { status: 500 })
+      }
     }
 
     return NextResponse.json({ error: 'Unsupported paymentMethod' }, { status: 400 })

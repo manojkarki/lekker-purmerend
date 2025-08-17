@@ -3,7 +3,7 @@
   "private": true,
   "description": "Homemade food e-commerce platform for Purmerend",
   "scripts": {
-    "dev": "bash scripts/dev-stop.sh && docker compose -f infra/docker/docker-compose.yml up --build",
+    "dev": "bash scripts/dev-stop.sh && bash scripts/dev-start.sh",
     "dev:infra": "docker compose -f infra/docker/docker-compose.yml up -d postgres redis medusa strapi",
     "dev:apps": "concurrently -k -p [{name}] -n strapi,web -c magenta,green \"pnpm -F @lekker/strapi dev\" \"pnpm -F @lekker/web dev\"",
     "dev:hybrid": "bash scripts/dev-stop.sh && pnpm dev:infra && pnpm dev:apps",

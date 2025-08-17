@@ -37,6 +37,7 @@ src/admin/
 
 # Strapi auto-generated files
 **/extensions/documentation/documentation/**/full_documentation.json
+apps/strapi/src/extensions/documentation/documentation/1.0.0/full_documentation.json
 
 # Database
 *.db
@@ -150,6 +151,9 @@ $RECYCLE.BIN/
 *.swp
 *.swo
 *~
+
+# Claude Code local settings
+.claude/settings.local.json
 
 # Temporary files
 tmp/

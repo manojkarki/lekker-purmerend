@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { CakeIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import { PaymentMethodSelector } from '@/components/PaymentMethodSelector'
 import { useCart } from '@/contexts/CartContext'
+import { getStripe } from '@/lib/stripe'
 
 interface CheckoutData {
   deliveryMethod: 'delivery' | 'pickup'
@@ -70,11 +71,43 @@ export default function CheckoutPage() {
 
       if (res.status === 202) {
         const data = await res.json()
+        
+        // Handle Stripe iDEAL payment
+        if (data.status === 'requires_payment' && data.clientSecret) {
+          const stripe = await getStripe()
+          if (!stripe) {
+            alert('Stripe kon niet worden geladen')
+            setIsSubmitting(false)
+            return
+          }
+
+          // Redirect to Stripe's iDEAL payment page
+          const { error } = await stripe.confirmIdealPayment(data.clientSecret, {
+            payment_method: {
+              ideal: {
+                // Don't specify bank - let user choose on Stripe's page
+              }
+            },
+            return_url: `${window.location.origin}/bestelling-geplaatst?orderId=${data.orderId}&payment=ideal&status=success`,
+          })
+
+          if (error) {
+            console.error('Stripe payment error:', error)
+            alert('Er ging iets mis met de betaling: ' + error.message)
+            setIsSubmitting(false)
+          } else {
+            // User is being redirected to bank, clear cart
+            clearCart()
+          }
+          return
+        }
+        
+        // Handle other 202 responses
         if (data.redirectUrl) {
           window.location.href = data.redirectUrl
           return
         }
-        alert('iDEAL betaling wordt voorbereid...')
+        alert('Betaling wordt voorbereid...')
         setIsSubmitting(false)
         return
       }

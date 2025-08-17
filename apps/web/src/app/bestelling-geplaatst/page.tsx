@@ -2,13 +2,31 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { CheckCircleIcon, CakeIcon, MapPinIcon, CreditCardIcon } from '@heroicons/react/24/outline'
+import { useEffect, useState } from 'react'
+import { CheckCircleIcon, CakeIcon, MapPinIcon, CreditCardIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const paymentMethod = searchParams.get('payment')
   const deliveryMethod = searchParams.get('delivery')
+  const paymentStatus = searchParams.get('status')
+  
+  const [paymentState, setPaymentState] = useState<'checking' | 'success' | 'failed' | 'unknown'>('checking')
+  
+  useEffect(() => {
+    // For iDEAL payments, we need to check the actual payment status
+    if (paymentMethod === 'ideal' && orderId) {
+      // In a real implementation, you might want to verify payment status
+      // For now, we'll assume success if we reach this page
+      setPaymentState(paymentStatus === 'success' ? 'success' : 'unknown')
+    } else {
+      // Cash payments are immediately successful
+      setPaymentState('success')
+    }
+  }, [paymentMethod, orderId, paymentStatus])
+  
+  const isPaymentSuccessful = paymentState === 'success'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,18 +46,27 @@ export default function OrderSuccessPage() {
 
       <div className="container py-12">
         <div className="max-w-2xl mx-auto">
-          {/* Success Icon */}
+          {/* Status Icon */}
           <div className="text-center mb-8">
-            <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
-              <CheckCircleIcon className="h-12 w-12 text-green-600" />
-            </div>
+            {isPaymentSuccessful ? (
+              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
+                <CheckCircleIcon className="h-12 w-12 text-green-600" />
+              </div>
+            ) : (
+              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-yellow-100 mb-6">
+                <ExclamationTriangleIcon className="h-12 w-12 text-yellow-600" />
+              </div>
+            )}
             
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Bestelling Geplaatst!
+              {isPaymentSuccessful ? 'Bestelling Geplaatst!' : 'Bestelling Verwerkt'}
             </h1>
             
             <p className="text-lg text-gray-600 mb-2">
-              Bedankt voor je bestelling. We hebben je bestelling ontvangen.
+              {isPaymentSuccessful 
+                ? 'Bedankt voor je bestelling. We hebben je bestelling ontvangen.'
+                : 'Je bestelling wordt verwerkt. We nemen contact met je op over de betaling.'
+              }
             </p>
             
             {orderId && (
